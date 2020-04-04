@@ -10,47 +10,87 @@ import {
   ModalBody,
   ModalCloseButton,
   ModalContent,
-  ModalFooter,
   ModalHeader,
   ModalOverlay,
   Text,
   useColorMode,
   useDisclosure,
-  Flex
+  Flex,
+  FormErrorMessage
 } from "@chakra-ui/core";
 import "firebase/firestore";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useUser } from "../context/user-context";
 import firebase from "../services/firebase";
+import { useForm } from "react-hook-form";
 
-function RestaurantForm() {
+function RestaurantForm({ restaurant: { name, description }, onDone }: any) {
+  const { handleSubmit, errors, register, formState } = useForm({
+    defaultValues: {
+      name,
+      description
+    }
+  });
+  const user = useUser();
+
+  function onSubmit(values: any) {
+    firebase
+      .firestore()
+      .collection("restaurants")
+      .doc(user!.uid)
+      .set(values)
+      .then(onDone)
+      .catch(e => console.log(e));
+  }
+
   return (
-    <Flex bg="blue.50" direction="column" justify="space-around" align="center">
-      <FormControl>
-        <FormLabel htmlFor="name">Restaurant Name</FormLabel>
-        <Input type="text" id="name" aria-describedby="name-helper-text" />
-        <FormHelperText id="name-helper-text">
-          We'll always spam your name.
-        </FormHelperText>
-      </FormControl>
-      <FormControl>
-        <FormLabel htmlFor="description">Restaurant Description</FormLabel>
-        <Input
-          type="text"
-          id="description"
-          aria-describedby="description-helper-text"
-        />
-        <FormHelperText id="description-helper-text">
-          Tell us about your restaurant.
-        </FormHelperText>
-      </FormControl>
+    <Flex direction="column" justify="space-around" align="center">
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <FormControl>
+          <FormLabel htmlFor="name">Restaurant Name</FormLabel>
+          <Input
+            ref={register}
+            type="text"
+            name="name"
+            aria-describedby="name-helper-text"
+          />
+          <FormHelperText id="name-helper-text">
+            We'll always spam your name.
+          </FormHelperText>
+          <FormErrorMessage>
+            {errors.name && errors.name.message}
+          </FormErrorMessage>
+        </FormControl>
+        <FormControl>
+          <FormLabel htmlFor="description">Restaurant Description</FormLabel>
+          <Input
+            ref={register}
+            type="text"
+            name="description"
+            aria-describedby="description-helper-text"
+          />
+          <FormHelperText id="description-helper-text">
+            Tell us about your restaurant.
+          </FormHelperText>
+          <FormErrorMessage>
+            {errors.description && errors.description.message}
+          </FormErrorMessage>
+        </FormControl>
+        <Flex direction="row-reverse" align="center">
+          <Button
+            isLoading={formState.isSubmitting}
+            rightIcon="arrow-right"
+            type="submit">
+            Submit
+          </Button>
+        </Flex>
+      </form>
     </Flex>
   );
 }
 
-function CreateModal() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
+function CreateModal({ restaurant, isOpen, onOpen, onClose }: any) {
+  console.log("Rest", restaurant);
   return (
     <>
       <Button onClick={onOpen}>Create One?</Button>
@@ -61,14 +101,8 @@ function CreateModal() {
           <ModalHeader>Create a Restaurant</ModalHeader>
           <ModalCloseButton />
           <ModalBody>
-            <RestaurantForm />
+            <RestaurantForm onDone={onClose} restaurant={restaurant} />
           </ModalBody>
-
-          <ModalFooter>
-            <Button rightIcon="arrow-forward" variant="ghost" onClick={save}>
-              Save
-            </Button>
-          </ModalFooter>
         </ModalContent>
       </Modal>
     </>
@@ -77,19 +111,17 @@ function CreateModal() {
 
 const Dashboard = () => {
   const { colorMode, toggleColorMode } = useColorMode();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [restaurant, setRestaurant] = useState<
     firebase.firestore.DocumentData
   >();
   const user = useUser();
-  const db = useRef(
+
+  useEffect(() => {
     firebase
       .firestore()
       .collection("restaurants")
       .doc(user!.uid)
-  );
-
-  useEffect(() => {
-    db.current
       .get()
       .then(function(doc) {
         if (doc.exists) {
@@ -108,19 +140,28 @@ const Dashboard = () => {
   return (
     <Box flex="1">
       <header className="App-header">
-        <Text>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </Text>
         {restaurant ? (
-          <Box>
+          <Flex align="center">
+            <Text>{restaurant.description}</Text>
             <Text>{restaurant.name}</Text>
-          </Box>
+            <IconButton
+              aria-label="Edit Restaurant"
+              icon="edit"
+              variant="outline"
+              onClick={onOpen}
+            />
+          </Flex>
         ) : (
           <Box>
             <Text>No Restaurant</Text>
-            <CreateModal />
           </Box>
         )}
+        <CreateModal
+          isOpen={isOpen}
+          onOpen={onOpen}
+          onClose={onClose}
+          restaurant={restaurant}
+        />
         <IconButton
           aria-label="Toggle Color Mode"
           icon={colorMode === "light" ? "moon" : "sun"}
