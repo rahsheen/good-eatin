@@ -1,26 +1,21 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import "./App.css";
+import AppProviders from "./context";
+import { useUser } from "./context/user-context";
+import { AuthenticatedRoutes, UnauthenticatedRoutes } from "./routes";
 
-function App() {
+const Main = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppProviders>
+      <App />
+    </AppProviders>
   );
+};
+
+function App() {  
+  const user = useUser();
+
+  return user ? <AuthenticatedRoutes /> : <UnauthenticatedRoutes />;
 }
 
-export default App;
+export default Main;
