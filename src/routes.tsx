@@ -1,12 +1,17 @@
 import { Box, Button, Heading, Text } from "@chakra-ui/core";
 import * as React from "react";
-import { BrowserRouter as Router, Route, Switch, useHistory } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  useHistory
+} from "react-router-dom";
 import Header from "./components/Header";
 import Login from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
 
 const Home = () => {
-  const { history } = useHistory();
+  const history = useHistory();
 
   return (
     <Box flex="1">
@@ -57,4 +62,3 @@ function UnauthenticatedRoutes() {
 }
 
 export { AuthenticatedRoutes, UnauthenticatedRoutes };
-
