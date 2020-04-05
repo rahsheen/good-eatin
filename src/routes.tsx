@@ -6,9 +6,9 @@ import {
   Switch,
   useHistory
 } from "react-router-dom";
-import Header from "./components/Header";
 import Login from "./components/Login";
 import { Dashboard } from "./components/Dashboard";
+import Navbar from "./components/Navbar";
 
 const Home = () => {
   const history = useHistory();
@@ -29,7 +29,7 @@ const ForgotPassword = () => <Text>ForgotPassword</Text>;
 const AuthenticatedRoutes = () => {
   return (
     <Router>
-      <Header />
+      <Navbar />
       <Switch>
         <Route path="/dashboard">
           <Dashboard />
@@ -42,7 +42,7 @@ const AuthenticatedRoutes = () => {
 function UnauthenticatedRoutes() {
   return (
     <Router>
-      <Header />
+      <Navbar />
       <Switch>
         <Route exact path="/">
           <Home />

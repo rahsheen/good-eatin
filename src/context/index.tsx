@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   ThemeProvider as ChakraProvider,
   ColorModeProvider,
+  CSSReset,
 } from "@chakra-ui/core";
 import { AuthProvider } from "./auth-context";
 import { UserProvider } from "./user-context";
@@ -14,6 +15,7 @@ function AppProviders({ children }: AppProps) {
   return (
     <ChakraProvider>
       <ColorModeProvider>
+        <CSSReset />
         <AuthProvider>
           <UserProvider>{children}</UserProvider>
         </AuthProvider>
