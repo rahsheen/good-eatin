@@ -2,24 +2,26 @@ import firebase from "../services/firebase";
 
 const restaurantsRef = firebase.firestore().collection("restaurants");
 
-export function saveRestaurant(uid: string, values: object) {
-  if (!uid || !values) throw new Error("Must provide a uid and values");
+export async function saveRestaurant(id: string, values: object) {
+  if (!values) throw new Error("Must provide values");
 
-  return restaurantsRef.add({ ...values, uid }).then(console.log);
+  if(!id) return restaurantsRef.add({ ...values, id });
+
+  return restaurantsRef.doc(id).update(values);
 }
 
-export function getRestaurants(uid: string) {
+export async function getRestaurants(uid: string) {
   if (!uid) throw new Error("Must provide a uid");
 
-  return restaurantsRef
+  const snapshot = await restaurantsRef
     .where("uid", "==", uid)
-    .get()
-    .then(snapshot => {
-      const arr: any[] = [];
-      snapshot.forEach(doc => {
-        // doc.data() is never undefined for query doc snapshots
-        arr.push(doc.data());
-      });
-      return arr;
-    });
+    .get();
+
+  const arr: any[] = [];
+  snapshot.forEach(doc => {
+    // doc.data() is never undefined for query doc snapshots
+    arr.push({...doc.data(), id: doc.id});
+  });
+  console.log("Got restaurants", arr)
+  return arr;
 }

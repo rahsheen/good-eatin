@@ -13,19 +13,22 @@ import {
 import React from "react";
 import { saveRestaurant } from "../utils/api";
 
-function RestaurantForm({ restaurant: { name, description }, onDone }: any) {
+function RestaurantForm({ restaurant = {}, onDone }: any) {
+  const { name, description, id } = restaurant;
+
+  const user = useUser();
   const { handleSubmit, errors, register, formState } = useForm({
     defaultValues: {
       name,
       description,
+      uid: user!.uid,
     },
   });
   const toast = useToast();
-  const user = useUser();
 
-  function onSubmit(values: any) {
-    saveRestaurant(user!.uid, values)
-      .then(() => {
+  async function onSubmit(values: any) {
+    saveRestaurant(id, values)
+      .then((result) => {
         toast({
           title: "Restaurant updated.",
           description: "We've updated your restaurant.",
@@ -33,7 +36,7 @@ function RestaurantForm({ restaurant: { name, description }, onDone }: any) {
           duration: 3000,
           isClosable: true,
         });
-        onDone();
+        onDone(result);
       })
       .catch((e) => console.log(e));
   }
